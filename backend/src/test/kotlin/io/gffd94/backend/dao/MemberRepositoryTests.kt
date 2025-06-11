@@ -3,18 +3,22 @@ package io.gffd94.backend.dao
 import io.gffd94.backend.domain.Member
 import io.gffd94.backend.dto.Role
 import io.gffd94.backend.util.genMember
+import io.gffd94.backend.util.genMemberList
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.platform.commons.logging.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.boot.test.context.SpringBootTest
 import java.time.LocalDateTime
 
 //val logger = LoggerFactory.getLogger(MemberRepositoryTests::class.java)
 private val log = KotlinLogging.logger {}
 
-@DataJpaTest // Srping Data JPA에 관련되 테스트들만 빈으로 띄워서 테스트 할 수 있다
+//@DataJpaTest // Srping Data JPA에 관련되 테스트들만 빈으로 띄워서 테스트 할 수 있다
+@SpringBootTest
 class MemberRepositoryTests @Autowired constructor(
     var repository: MemberRepository
 ) {
@@ -57,5 +61,33 @@ class MemberRepositoryTests @Autowired constructor(
 
     }
 
+    @Test
+    fun `회원 저장 후 findAllMemberView 메서드를 통해서 리스트를 불러오면 MemberView 타입으로 불러올 수 있다`() {
+
+        val size = 10
+
+        val memberList = genMemberList(size)
+        repository.saveAll(memberList)
+
+        val descList = repository.findAllMemberView()
+
+        assertThat(descList.size).isEqualTo(size)
+        Assertions.assertThat(descList.size).isEqualTo(size)
+
+        descList.forEachIndexed { index, actual ->
+            val expected = memberList[index]
+
+            Assertions.assertThat(actual.name).isEqualTo(expected.name)
+            Assertions.assertThat(actual.email).isEqualTo(expected.email)
+            Assertions.assertThat(actual.role).isEqualTo(expected.role)
+        }
+
+
+    }
+
+
 }
+
+
+
 
